@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Assign Tutor to Student</h2>
+
+<!-- 分配导师表单 (Jira 任务 MSD426GXUST20-8) -->
+<form method="POST" action="#" class="mt-4 bg-white p-4 shadow-sm rounded">
+    <div class="mb-3">
+        <label for="student" class="form-label">Select Student</label>
+        <select class="form-select" id="student" name="student_id" required>
+            <option value="">-- Choose a student --</option>
+            {% for student in students %}
+            <option value="{{ student.id }}">{{ student.name }} (Year {{ student.year_level }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="tutor" class="form-label">Select Tutor</label>
+        <select class="form-select" id="tutor" name="tutor_id" required>
+            <option value="">-- Choose a tutor --</option>
+            {% for tutor in tutors %}
+            <option value="{{ tutor.id }}">{{ tutor.name }} - {{ tutor.subjects }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Confirm Allocation</button>
+    
+    <!-- 移除分配的按钮 (Jira 任务 MSD426GXUST20-10) -->
+    <button type="button" class="btn btn-outline-danger float-end">Remove Current Allocation</button>
+</form>
+{% endblock %}
