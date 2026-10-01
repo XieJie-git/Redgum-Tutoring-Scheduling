@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Student Records</h2>
+
+<!-- 搜索和过滤表单 (Jira 任务 MSD426GXUST20-7) -->
+<form class="row g-3 mb-4" method="GET" action="#">
+    <div class="col-auto">
+        <input type="text" class="form-control" name="search" placeholder="Search by name...">
+    </div>
+    <div class="col-auto">
+        <select class="form-select" name="year_level">
+            <option value="">All Years</option>
+            <option value="5">Year 5</option>
+            <option value="10">Year 10</option>
+            <option value="12">Year 12</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
+
+<!-- 学生列表表格 -->
+<table class="table table-striped table-hover bg-white shadow-sm">
+    <thead class="table-dark">
+        <tr>
+            <th>Name</th>
+            <th>Year Level</th>
+            <th>Contact</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- 这里的 students 变量需要 Jie 在后端路由中传入 -->
+        {% for student in students %}
+        <tr>
+            <td>{{ student.name }}</td>
+            <td>{{ student.year_level }}</td>
+            <td>{{ student.contact_name }} ({{ student.contact_phone }})</td>
+            <td><span class="badge bg-success">Active</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary">Assign Tutor</button>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" class="text-center text-muted py-4">No students found matching your search.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
