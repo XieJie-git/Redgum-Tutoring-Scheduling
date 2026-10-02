@@ -3,7 +3,7 @@
 {% block content %}
 <h2 class="mb-4">Student Records</h2>
 
-<!-- 搜索和过滤表单 (Jira 任务 MSD426GXUST20-7) -->
+<!-- Search and filter form -->
 <form class="row g-3 mb-4" method="GET" action="#">
     <div class="col-auto">
         <input type="text" class="form-control" name="search" placeholder="Search by name...">
@@ -21,7 +21,7 @@
     </div>
 </form>
 
-<!-- 学生列表表格 -->
+<!-- Student list table -->
 <table class="table table-striped table-hover bg-white shadow-sm">
     <thead class="table-dark">
         <tr>
@@ -33,7 +33,7 @@
         </tr>
     </thead>
     <tbody>
-        <!-- 这里的 students 变量需要 Jie 在后端路由中传入 -->
+        <!-- 'students' variable is provided by the backend route -->
         {% for student in students %}
         <tr>
             <td>{{ student.name }}</td>
