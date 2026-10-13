@@ -11,7 +11,7 @@
     <div class="col-auto">
         <select class="form-select" name="year_level">
             <option value="">All Years</option>
-            <option value="5">Year 5</option>
+            <option value="9">Year 9</option>
             <option value="10">Year 10</option>
             <option value="12">Year 12</option>
         </select>
@@ -38,10 +38,11 @@
         <tr>
             <td>{{ student.name }}</td>
             <td>{{ student.year_level }}</td>
-            <td>{{ student.contact_name }} ({{ student.contact_phone }})</td>
+            <td>({{ student.contact_phone }})</td>
             <td><span class="badge bg-success">Active</span></td>
             <td>
-                <button class="btn btn-sm btn-outline-primary">Assign Tutor</button>
+                <!-- Sprint2 修改：按钮替换为a标签，携带student.id参数 -->
+                <a href="/tutors/assign?student_id={{ student.id }}" class="btn btn-sm btn-outline-primary">Assign Tutor</a>
             </td>
         </tr>
         {% else %}
