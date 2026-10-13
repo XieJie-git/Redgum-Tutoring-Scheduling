@@ -1,30 +1,74 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for, flash
 
-# 初始化Flask应用
 app = Flask(__name__)
+# flash消息需要密钥，用于页面提示
+app.secret_key = "mysecretkey123"
 
-# 首页路由
+# Sprint1 模拟内存数据
+mock_students = [
+    {"id": 1, "name": "Alice Smith", "year_level": "Year 9", "contact_phone":"12345678"},
+    {"id": 2, "name": "Bob Jones", "year_level": "Year 10", "contact_phone":"87654321"}
+]
+
+mock_tutors = [
+    {"id":1,"name":"Tom Wilson","specialty":"Math"},
+    {"id":2,"name":"Lisa Brown","specialty":"Chemistry"}
+]
+
+allocations = []
+
 @app.route('/')
 def index():
     return render_template('base.html')
 
-# 学生页面路由
 @app.route('/students')
 def student_page():
-    mock_students = [
-        {"id": 1, "name": "Alice Smith", "subject": "Mathematics"},
-        {"id": 2, "name": "Bob Jones", "subject": "Physics"}
-    ]
     return render_template('students/index.html', students=mock_students)
 
-# 导师分配页面路由
-@app.route('/tutors/assign')
+@app.route('/tutors/assign', methods=["GET","POST"])
 def assign_tutor():
-    mock_tutors = [
-        {"id": 1, "name": "Tom Wilson", "specialty": "Math"},
-        {"id": 2, "name": "Lisa Brown", "specialty": "Chemistry"}
-    ]
-    return render_template('tutors/assign.html', tutors=mock_tutors)
+    # Sprint2：读取url参数，预选中学生
+    pre_select_student_id = request.args.get("student_id", type=int)
+
+    if request.method == "POST":
+        student_id = int(request.form["student_id"])
+        tutor_id = int(request.form["tutor_id"])
+
+        # Sprint2 业务校验：不允许同一个学生重复分配
+        for item in allocations:
+            for s in mock_students:
+                if s["id"] == student_id and item["student_name"] == s["name"]:
+                    flash("Error: This student already has an allocation!")
+                    return redirect(url_for("assign_tutor"))
+
+        s = next(x for x in mock_students if x["id"] == student_id)
+        t = next(x for x in mock_tutors if x["id"] == tutor_id)
+
+        new_item = {
+            "student_name": s["name"],
+            "tutor_name": t["name"],
+            "time": "Monday 14:00"
+        }
+        allocations.append(new_item)
+        flash("Allocation created successfully!")
+        return redirect(url_for("schedule_page"))
+
+    return render_template('tutors/assign.html',
+                           tutors=mock_tutors,
+                           students=mock_students,
+                           pre_select_student_id=pre_select_student_id)
+
+# Sprint2 新增：删除单条分配记录路由
+@app.route("/schedule/delete/<int:index>", methods=["POST"])
+def delete_allocation(index):
+    if 0 <= index < len(allocations):
+        del allocations[index]
+        flash("Allocation record removed.")
+    return redirect(url_for("schedule_page"))
+
+@app.route('/schedule')
+def schedule_page():
+    return render_template('schedule/index.html', schedule=allocations)
 
 if __name__ == '__main__':
     app.run(debug=True)
