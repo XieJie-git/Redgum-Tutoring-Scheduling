@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tutor Allocation</title>
+</head>
+<body>
+    <h1>Create Tutor Allocation</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul style="color:red;">
+                {% for msg in messages %}
+                    <li>{{ msg }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form action="/add-allocation" method="POST">
+        <label>Tutor Name:</label>
+        <input type="text" name="tutor_name" required><br><br>
+
+        <label>Student Name:</label>
+        <input type="text" name="student_name" required><br><br>
+
+        <label>Session Time (YYYY-MM-DD HH:MM):</label>
+        <input type="text" name="session_time" required><br><br>
+
+        <button type="submit">Create Allocation</button>
+    </form>
+
+    <h2>Current Allocations</h2>
+    <ul>
+        {% for item in allocations %}
+            <li>{{ item.tutor_name }} | {{ item.student_name }} | {{ item.session_time }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
