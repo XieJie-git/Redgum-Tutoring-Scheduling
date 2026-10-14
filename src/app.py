@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
 app = Flask(__name__)
 app.secret_key = "dev_secret_key"
@@ -6,14 +6,14 @@ app.secret_key = "dev_secret_key"
 # In-memory storage for allocations (replace with database later)
 allocations = []
 
-# US004: Check duplicate tutor session at same time
+# US004: Check duplicate tutor booking at same time
 def is_tutor_time_duplicate(tutor_name, session_time):
     for record in allocations:
         if record["tutor_name"] == tutor_name and record["session_time"] == session_time:
             return True
     return False
 
-@app.route('/')
+@app.route("/")
 def index():
     return "Redgum Tutoring Scheduling Web App"
 
@@ -41,5 +41,22 @@ def add_allocation():
     flash("Allocation created successfully!")
     return redirect(url_for("allocation_page"))
 
+# ============ US008 tutor filter API ============
+tutors = [
+    {"id":1, "name":"Tutor A", "subject":"Math"},
+    {"id":2, "name":"Tutor B", "subject":"English"},
+    {"id":3, "name":"Tutor C", "subject":"Math"}
+]
+
+@app.route('/api/tutors', methods=['GET'])
+def filter_tutors():
+    subject_filter = request.args.get('subject')
+    result = tutors
+    if subject_filter:
+        result = [t for t in tutors if t["subject"] == subject_filter]
+    return jsonify(result)
+# =================================================
+
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
+
