@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tutoring Session Report</title>
+    <style>
+        table {border-collapse: collapse; width: 90%; margin: 30px auto;}
+        th,td {border:1px solid #999; padding:10px; text-align:center;}
+        th {background-color: #336699; color:white;}
+        h2 {text-align:center; margin-top:30px;}
+    </style>
+</head>
+<body>
+    <h2>Tutoring Session Report</h2>
+    <table>
+        <tr>
+            <th>Session ID</th>
+            <th>Student Name</th>
+            <th>Tutor Name</th>
+            <th>Subject</th>
+            <th>Session Time</th>
+        </tr>
+        {% for session in session_list %}
+        <tr>
+            <td>{{ session.session_id }}</td>
+            <td>{{ session.student_name }}</td>
+            <td>{{ session.tutor_name }}</td>
+            <td>{{ session.subject }}</td>
+            <td>{{ session.time }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -70,5 +70,19 @@ def delete_allocation(index):
 def schedule_page():
     return render_template('schedule/index.html', schedule=allocations)
 
+# ===================== US010 Session Report =====================
+sessions = [
+    {"session_id": 1, "student_name": "Alice", "tutor_name": "Tutor A", "subject": "Math", "time": "Mon 10:00"},
+    {"session_id": 2, "student_name": "Bob", "tutor_name": "Tutor B", "subject": "English", "time": "Tue 14:00"},
+    {"session_id": 3, "student_name": "Charlie", "tutor_name": "Tutor A", "subject": "Math", "time": "Wed 11:00"},
+    {"session_id": 4, "student_name": "Diana", "tutor_name": "Tutor C", "subject": "Physics", "time": "Thu 15:30"}
+]
+
+@app.route('/report')
+def session_report():
+    """Render tutoring session report page for admin"""
+    return render_template("report.html", session_list=sessions)
+# ===============================================================
+
 if __name__ == '__main__':
     app.run(debug=True)
