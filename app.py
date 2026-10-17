@@ -2,10 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from functools import wraps
 
 app = Flask(__name__)
-# flash消息需要密钥，用于页面提示
+# flash消息密钥
 app.secret_key = "mysecretkey123"
 
-# Sprint1 模拟内存数据（已扩充，页面内容更饱满）
+# Sprint1 模拟内存学生数据，增加username用于学生账号匹配
 mock_students = [
     {"id": 1, "name": "Alice Smith", "year_level": "Year 9", "contact_phone":"12345678", "username":"alice01"},
     {"id": 2, "name": "Bob Jones", "year_level": "Year 10", "contact_phone":"87654321", "username":"bob01"},
@@ -59,22 +59,21 @@ def student_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ==========根路由：访问 http://127.0.0.1:5000 直接跳转登录页面 ==========
+# ==========根路由：访问首页直接跳转登录页面 ==========
 @app.route('/')
 def index():
     return redirect(url_for("login"))
 
-# 登录成功后跳转的首页，渲染base.html（带导航栏）
+# 登录成功后首页
 @app.route('/home')
 @login_required
 def home_page():
     return render_template('base.html')
 
-
+# 学生列表 +后端搜索过滤
 @app.route('/students')
 @login_required
 def student_page():
-    # =========后端搜索过滤逻辑=========
     search_text = request.args.get("search", "").strip()
     year_filter = request.args.get("year", "").strip()
     result_list = mock_students
@@ -84,21 +83,21 @@ def student_page():
     if year_filter and year_filter != "all":
         result_list = [s for s in result_list if s["year_level"] == year_filter]
 
-    return render_template('students/index.html', students=result_list,
-                           search=search_text, selected_year=year_filter)
+    return render_template('students/index.html',
+                           students=result_list,
+                           search=search_text,
+                           selected_year=year_filter)
 
-
-
+# 导师分配
 @app.route('/tutors/assign', methods=["GET","POST"])
 @login_required
 def assign_tutor():
-    # Sprint2: 读取url参数，预选中学生
     pre_select_student_id = request.args.get("student_id", type=int)
     if request.method == "POST":
         student_id = int(request.form["student_id"])
         tutor_id = int(request.form["tutor_id"])
 
-        # Sprint2 业务校验: 不允许同一个学生重复分配
+        # 禁止重复分配同一学生
         for item in allocations:
             for s in mock_students:
                 if s["id"] == student_id and item["student_name"] == s["name"]:
@@ -124,7 +123,7 @@ def assign_tutor():
                            students=mock_students,
                            pre_select_student_id=pre_select_student_id)
 
-# Sprint2 新增：删除单条分配记录路由
+# 删除排课（仅管理员）
 @app.route("/schedule/delete/<int:index>", methods=["POST"])
 @admin_required
 def delete_allocation(index):
@@ -133,13 +132,13 @@ def delete_allocation(index):
         flash("Allocation record removed.")
     return redirect(url_for("schedule_page"))
 
-
+# 全局排课总表
 @app.route('/schedule')
 @login_required
 def schedule_page():
     return render_template('schedule/index.html', schedule=allocations)
 
-# =========学生个人课表路由 =========
+# 学生个人课表（学生专属）
 @app.route("/student/my_timetable")
 @login_required
 @student_required
@@ -148,7 +147,7 @@ def student_my_timetable():
     my_schedule = [item for item in allocations if item["student_username"] == stu_username]
     return render_template("students/my_timetable.html", my_schedule=my_schedule)
 
-# ===================== US010 Session Report 扩充会话数据 =====================
+# US010 Session Report 模拟会话数据
 sessions = [
     {"session_id": 1, "student_name": "Alice", "tutor_name": "Tom W", "subject": "Mathematics", "time": "Mon 10:00"},
     {"session_id": 2, "student_name": "Bob", "tutor_name": "Lisa B", "subject": "Chemistry", "time": "Tue 14:00"},
@@ -161,11 +160,10 @@ sessions = [
 @app.route('/report')
 @login_required
 def session_report():
-    """Render tutoring session report page for admin"""
+    """Render tutoring session report page"""
     return render_template("report.html", session_list=sessions)
 
-# ===================== Sprint2 US013 US014 Login & Permission Module =====================
-# Demo test accounts for assignment demo only
+# 用户账号
 demo_users = {
     "admin01": {
         "password": "pass123",
@@ -195,25 +193,24 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         user = demo_users.get(username)
+
         if not user:
             flash("Invalid username or password")
             return render_template("login.html")
         if user["password"] != password:
             flash("Invalid username or password")
             return render_template("login.html")
-        # US014: Deactivated account cannot login
         if not user["is_active"]:
             flash("This account has been deactivated. Cannot log in.")
             return render_template("login.html")
-        # Save full user info to session
+
+        # session存储完整用户对象，适配权限装饰器
         session["user"] = {
             "username": username,
             "role": user["role"]
         }
-        # 登录成功跳转 /home 带导航首页
         return redirect(url_for('home_page'))
     return render_template("login.html")
-
 
 @app.route('/logout')
 def logout():
@@ -221,13 +218,12 @@ def logout():
     flash("You have logged out")
     return redirect(url_for('login'))
 
-# Admin only management page for US013 & US014 demo
+# 管理员页面
 @app.route("/user_manage")
 @admin_required
 def user_manage():
     current_role = session.get("user")["role"]
     return render_template("user_manage.html", current_role=current_role)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
