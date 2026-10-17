@@ -5,7 +5,7 @@ app = Flask(__name__)
 # flash消息需要密钥，用于页面提示
 app.secret_key = "mysecretkey123"
 
-# Sprint1 模拟内存数据
+# Sprint1 模拟内存数据（已扩充，页面内容更饱满）
 mock_students = [
     {"id": 1, "name": "Alice Smith", "year_level": "Year 9", "contact_phone":"12345678", "username":"alice01"},
     {"id": 2, "name": "Bob Jones", "year_level": "Year 10", "contact_phone":"87654321", "username":"bob01"},
@@ -86,6 +86,7 @@ def student_page():
 
     return render_template('students/index.html', students=result_list,
                            search=search_text, selected_year=year_filter)
+
 
 
 @app.route('/tutors/assign', methods=["GET","POST"])
