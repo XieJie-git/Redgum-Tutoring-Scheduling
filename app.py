@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from functools import wraps
-
 app = Flask(__name__)
 # flash消息密钥
 app.secret_key = "mysecretkey123"
@@ -43,7 +42,19 @@ def admin_required(f):
             return redirect(url_for('login'))
         if session["user"]["role"] != "admin":
             flash("Unauthorised: Only admin can access this page")
-            return redirect(url_for('session_report'))
+            return redirect(url_for('home_page'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# 仅导师可访问
+def tutor_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user" not in session:
+            return redirect(url_for('login'))
+        if session["user"]["role"] not in ["admin", "tutor"]:
+            flash("Unauthorised: This page is for tutor or admin")
+            return redirect(url_for('home_page'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -68,51 +79,51 @@ def index():
 @app.route('/home')
 @login_required
 def home_page():
-    return render_template('base.html')
+    return render_template('home.html')
 
-# 学生列表 +后端搜索过滤
+# 学生列表 +后端搜索过滤【修复：参数year_level和前端表单对应】
 @app.route('/students')
 @login_required
+@admin_required
 def student_page():
     search_text = request.args.get("search", "").strip()
-    year_filter = request.args.get("year", "").strip()
+    year_filter = request.args.get("year_level", "").strip()
     result_list = mock_students
-
     if search_text:
         result_list = [s for s in result_list if search_text.lower() in s["name"].lower()]
-    if year_filter and year_filter != "all":
+    if year_filter and year_filter != "":
         result_list = [s for s in result_list if s["year_level"] == year_filter]
-
     return render_template('students/index.html',
                            students=result_list,
                            search=search_text,
                            selected_year=year_filter)
 
-# 导师分配
+# 导师分配 —— 支持前端下拉选择上课时间，不再写死时间
 @app.route('/tutors/assign', methods=["GET","POST"])
 @login_required
+@admin_required
 def assign_tutor():
     pre_select_student_id = request.args.get("student_id", type=int)
     if request.method == "POST":
         student_id = int(request.form["student_id"])
         tutor_id = int(request.form["tutor_id"])
+        session_time = request.form["session_time"]
 
         # 禁止重复分配同一学生
         for item in allocations:
             for s in mock_students:
-                if s["id"] == student_id and item["student_name"] == s["name"]:
+                if s["id"] == student_id and item["student_username"] == s["username"]:
                     flash("Error: This student already has an allocation!")
                     return redirect(url_for("assign_tutor"))
 
         s = next(x for x in mock_students if x["id"] == student_id)
         t = next(x for x in mock_tutors if x["id"] == tutor_id)
-
         new_item = {
             "student_name": s["name"],
             "student_username": s["username"],
             "tutor_name": t["name"],
             "subject": t["specialty"],
-            "time": "Monday 14:00"
+            "time": session_time
         }
         allocations.append(new_item)
         flash("Allocation created successfully!")
@@ -135,10 +146,11 @@ def delete_allocation(index):
 # 全局排课总表
 @app.route('/schedule')
 @login_required
+@tutor_required
 def schedule_page():
     return render_template('schedule/index.html', schedule=allocations)
 
-# 学生个人课表（学生专属）
+# 学生个人课表（学生专属，每个学生只看自己的记录）
 @app.route("/student/my_timetable")
 @login_required
 @student_required
@@ -147,23 +159,23 @@ def student_my_timetable():
     my_schedule = [item for item in allocations if item["student_username"] == stu_username]
     return render_template("students/my_timetable.html", my_schedule=my_schedule)
 
-# US010 Session Report 模拟会话数据
-sessions = [
-    {"session_id": 1, "student_name": "Alice", "tutor_name": "Tom W", "subject": "Mathematics", "time": "Mon 10:00"},
-    {"session_id": 2, "student_name": "Bob", "tutor_name": "Lisa B", "subject": "Chemistry", "time": "Tue 14:00"},
-    {"session_id": 3, "student_name": "Charlie", "tutor_name": "Tom W", "subject": "Mathematics", "time": "Wed 11:00"},
-    {"session_id": 4, "student_name": "Diana", "tutor_name": "James C", "subject": "Physics", "time": "Thu 15:30"},
-    {"session_id": 5, "student_name": "Ella", "tutor_name": "Sarah T", "subject": "English Literature", "time": "Fri 09:30"},
-    {"session_id": 6, "student_name": "Frank", "tutor_name": "James C", "subject": "Physics", "time": "Fri 13:00"},
-]
-
+# Report：动态从allocations生成会话报表，和分配记录打通
 @app.route('/report')
 @login_required
+@tutor_required
 def session_report():
-    """Render tutoring session report page"""
-    return render_template("report.html", session_list=sessions)
+    session_list = []
+    for idx, alloc in enumerate(allocations):
+        session_list.append({
+            "session_id": idx + 1,
+            "student_name": alloc["student_name"],
+            "tutor_name": alloc["tutor_name"],
+            "subject": alloc["subject"],
+            "time": alloc["time"]
+        })
+    return render_template("report.html", session_list=session_list)
 
-# 用户账号
+# =========完整学生账号，所有学生都可以登录=========
 demo_users = {
     "admin01": {
         "password": "pass123",
@@ -176,6 +188,31 @@ demo_users = {
         "is_active": True
     },
     "alice01": {
+        "password": "pass123",
+        "role": "student",
+        "is_active": True
+    },
+    "bob01": {
+        "password": "pass123",
+        "role": "student",
+        "is_active": True
+    },
+    "charlie01": {
+        "password": "pass123",
+        "role": "student",
+        "is_active": True
+    },
+    "diana01": {
+        "password": "pass123",
+        "role": "student",
+        "is_active": True
+    },
+    "ella01": {
+        "password": "pass123",
+        "role": "student",
+        "is_active": True
+    },
+    "frank01": {
         "password": "pass123",
         "role": "student",
         "is_active": True
@@ -193,7 +230,6 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         user = demo_users.get(username)
-
         if not user:
             flash("Invalid username or password")
             return render_template("login.html")
@@ -203,7 +239,6 @@ def login():
         if not user["is_active"]:
             flash("This account has been deactivated. Cannot log in.")
             return render_template("login.html")
-
         # session存储完整用户对象，适配权限装饰器
         session["user"] = {
             "username": username,
@@ -227,6 +262,8 @@ def user_manage():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
 
 
 

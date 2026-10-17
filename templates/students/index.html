@@ -1,55 +1,75 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h2 class="mb-4">Student Records</h2>
 
-<!-- Search and filter form -->
-<form class="row g-3 mb-4" method="GET" action="#">
-    <div class="col-auto">
-        <input type="text" class="form-control" name="search" placeholder="Search by name...">
-    </div>
-    <div class="col-auto">
-        <select class="form-select" name="year_level">
-            <option value="">All Years</option>
-            <option value="9">Year 9</option>
-            <option value="10">Year 10</option>
-            <option value="12">Year 12</option>
-        </select>
-    </div>
-    <div class="col-auto">
+<style>
+table.table th,
+table.table td {
+    padding: 12px 10px;
+    vertical-align: middle;
+}
+</style>
+
+<div class="container mt-4 mb-5">
+    <h2>Student Records</h2>
+
+    <form class="form-inline mb-4" method="GET" action="{{ url_for('student_page') }}">
+        <div class="form-group mr-2">
+            <input type="text"
+                   class="form-control"
+                   name="search"
+                   placeholder="Search by name..."
+                   value="{{ search }}">
+        </div>
+
+        <div class="form-group mr-2">
+            <select class="form-control" name="year_level">
+                <option value="">All Years</option>
+                <option value="Year 9" {% if selected_year == 'Year 9' %}selected{% endif %}>Year 9</option>
+                <option value="Year 10" {% if selected_year == 'Year 10' %}selected{% endif %}>Year 10</option>
+                <option value="Year 11" {% if selected_year == 'Year 11' %}selected{% endif %}>Year 11</option>
+                <option value="Year 12" {% if selected_year == 'Year 12' %}selected{% endif %}>Year 12</option>
+            </select>
+        </div>
+
         <button type="submit" class="btn btn-primary">Search</button>
-    </div>
-</form>
+    </form>
 
-<!-- Student list table -->
-<table class="table table-striped table-hover bg-white shadow-sm">
-    <thead class="table-dark">
-        <tr>
-            <th>Name</th>
-            <th>Year Level</th>
-            <th>Contact</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- 'students' variable is provided by the backend route -->
-        {% for student in students %}
-        <tr>
-            <td>{{ student.name }}</td>
-            <td>{{ student.year_level }}</td>
-            <td>({{ student.contact_phone }})</td>
-            <td><span class="badge bg-success">Active</span></td>
-            <td>
-                <!-- Sprint2 修改：按钮替换为a标签，携带student.id参数 -->
-                <a href="/tutors/assign?student_id={{ student.id }}" class="btn btn-sm btn-outline-primary">Assign Tutor</a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="5" class="text-center text-muted py-4">No students found matching your search.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <table class="table table-striped table-bordered bg-white">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Year Level</th>
+                <th>Contact</th>
+                <th class="text-danger fw-bold">Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>{{ student.year_level }}</td>
+                <td>{{ student.contact_phone }}</td>
+                <td>
+                    <span class="badge bg-success text-white fw-bold">Active</span>
+                </td>
+                <td>
+                    <a href="{{ url_for('assign_tutor', student_id=student.id) }}"
+                       class="btn btn-sm btn-outline-primary">
+                        Assign Tutor
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    No students found matching your search.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 {% endblock %}
+

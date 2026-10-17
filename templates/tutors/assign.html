@@ -1,44 +1,66 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h2 class="mb-4">Assign Tutor to Student</h2>
 
-<!-- Flash message 提示框，用于成功/错误提示 -->
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-    {% for msg in messages %}
-        <div class="alert alert-info">{{ msg }}</div>
-    {% endfor %}
-{% endif %}
-{% endwith %}
+<style>
+form select,
+form button {
+    padding: 10px;
+}
+</style>
 
-<!-- Assign tutor form -->
-<form method="POST" action="#" class="mt-4 bg-white p-4 shadow-sm rounded">
-    <div class="mb-3">
-        <label for="student" class="form-label">Select Student</label>
-        <select class="form-select" id="student" name="student_id" required>
-            <option value="">-- Choose a student --</option>
-            {% for student in students %}
-            <option value="{{ student.id }}"
-                {% if pre_select_student_id == student.id %}selected{% endif %}>
-                {{ student.name }} (Year {{ student.year_level }})
-            </option>
+<div class="container mt-4 mb-5">
+    <h2 class="mb-4">Assign Tutor to Student</h2>
+
+    <!-- Flash message 提示框，用于成功/错误提示 -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="alert alert-info">{{ msg }}</div>
             {% endfor %}
-        </select>
-    </div>
+        {% endif %}
+    {% endwith %}
 
-    <div class="mb-3">
-        <label for="tutor" class="form-label">Select Tutor</label>
-        <select class="form-select" id="tutor" name="tutor_id" required>
-            <option value="">-- Choose a tutor --</option>
-            {% for tutor in tutors %}
-            <option value="{{ tutor.id }}">{{ tutor.name }} - {{ tutor.specialty }}</option>
-            {% endfor %}
-        </select>
-    </div>
+    <!-- Assign tutor form -->
+    <form method="POST" action="{{ url_for('assign_tutor') }}" class="mt-4 bg-white p-4 border border-secondary">
+        <div class="mb-3">
+            <label for="student" class="form-label">Select Student</label>
+            <select class="form-select" id="student" name="student_id" required>
+                <option value="">-- Choose a student --</option>
+                {% for student in students %}
+                <option value="{{ student.id }}"
+                    {% if pre_select_student_id == student.id %}selected{% endif %}>
+                    {{ student.name }} ({{ student.year_level }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <button type="submit" class="btn btn-success">Confirm Allocation</button>
-    <!-- Remove allocation button (optional, no backend logic yet) -->
-    <button type="button" class="btn btn-outline-danger float-end">Remove Current Allocation</button>
-</form>
+        <div class="mb-3">
+            <label for="tutor" class="form-label">Select Tutor</label>
+            <select class="form-select" id="tutor" name="tutor_id" required>
+                <option value="">-- Choose a tutor --</option>
+                {% for tutor in tutors %}
+                <option value="{{ tutor.id }}">{{ tutor.name }} - {{ tutor.specialty }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- 新增：可选上课时间段 -->
+        <div class="mb-3">
+            <label for="session_time" class="form-label">Select Session Time</label>
+            <select class="form-select" id="session_time" name="session_time" required>
+                <option value="">-- Choose Session Time --</option>
+                <option value="Monday 14:00">Monday 14:00</option>
+                <option value="Tuesday 14:00">Tuesday 14:00</option>
+                <option value="Wednesday 11:00">Wednesday 11:00</option>
+                <option value="Thursday 15:30">Thursday 15:30</option>
+                <option value="Friday 09:30">Friday 09:30</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success">Confirm Allocation</button>
+    </form>
+</div>
+
 {% endblock %}
+
