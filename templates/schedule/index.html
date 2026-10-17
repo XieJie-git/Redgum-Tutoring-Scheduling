@@ -1,44 +1,43 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h2 class="mb-4">Tutoring Schedule</h2>
-
-<!-- Flash message 提示框：展示删除/提交提示信息 -->
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-    {% for msg in messages %}
-        <div class="alert alert-info">{{ msg }}</div>
-    {% endfor %}
-{% endif %}
-{% endwith %}
+<div class="page-header">
+    <h2>Full Tutoring Schedule Timetable</h2>
+</div>
 
 {% if schedule | length == 0 %}
-<div class="alert alert-info">No tutor allocations yet. Please assign a tutor first.</div>
+<p>No allocation records have been created yet.</p>
 {% else %}
-<table class="table table-striped table-bordered">
+<div class="table-card">
+<table class="student-table">
     <thead>
         <tr>
-            <th>Student</th>
+            <th>Student Name</th>
             <th>Tutor</th>
-            <th>Session Time</th>
-            <th>Action</th>
+            <th>Subject</th>
+            <th>Time</th>
+            {% if session.user.role == 'admin' %}
+            <th>Operation</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
-        {% for entry in schedule %}
-        <tr>
-            <td>{{ entry.student_name }}</td>
-            <td>{{ entry.tutor_name }}</td>
-            <td>{{ entry.time }}</td>
-            <td>
-                <!-- Delete表单，提交到删除路由，loop.index0获取当前行下标 -->
-                <form action="{{ url_for('delete_allocation', index=loop.index0) }}" method="POST" style="margin:0;">
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+    {% for item in schedule %}
+    <tr>
+        <td>{{item.student_name}}</td>
+        <td>{{item.tutor_name}}</td>
+        <td>{{item.subject}}</td>
+        <td>{{item.time}}</td>
+        {% if session.user.role == 'admin' %}
+        <td>
+            <form method="post" action="{{ url_for('delete_allocation', index=loop.index0) }}" style="display:inline">
+                <button class="primary-btn" type="submit">Delete</button>
+            </form>
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
     </tbody>
 </table>
+</div>
 {% endif %}
 {% endblock %}

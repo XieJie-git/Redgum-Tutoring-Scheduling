@@ -47,27 +47,57 @@
             border-radius:10px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
-        h1, h2{
-            margin-bottom:16px;
-            color:#2b3a55;
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        p{
-            margin-bottom:12px;
+        .toolbar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px 24px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
         }
-        table{
-            width:100%;
-            border-collapse: collapse;
-            margin:16px 0;
+        .toolbar-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
         }
-        table th{
-            background:#2b3a55;
-            color:white;
-            padding:12px;
-            text-align:left;
+        .table-card {
+            background: white;
+            border-radius: 10px;
+            padding: 8px 24px 24px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
-        table td{
-            padding:12px;
-            border-bottom:1px solid #e2e8f0;
+        .student-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .student-table th {
+            background: #2b3a55;
+            color: white;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .student-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #eef2f7;
+            color: #2d3748;
+        }
+        .student-table tr:last-child td {
+            border-bottom: none;
+        }
+        .student-table tr:hover {
+            background: #f7f9fc;
         }
         .flash-message{
             padding:12px 16px;
@@ -76,31 +106,61 @@
             background:#fff3bf;
             color:#856404;
         }
-        button, input[type="submit"]{
-            background:#2b3a55;
-            color:white;
-            border:none;
-            padding:8px 16px;
-            border-radius:5px;
-            cursor:pointer;
-            margin:4px;
+        .search-input,
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            min-width: 160px;
         }
-        button:hover{
-            background:#405780;
+        .primary-btn {
+            background: #2b3a55;
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .primary-btn:hover {
+            background: #405780;
+        }
+        .link-btn {
+            color: #2b3a55;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #2b3a55;
+            background: white;
+            display: inline-block;
+        }
+        .link-btn:hover {
+            background: #2b3a55;
+            color: white;
         }
     </style>
 </head>
 <body>
 <nav>
     <span class="nav-title">Redgum Tutoring</span>
-    <a href="{{url_for('student_page')}}">Students</a>
-    <a href="{{url_for('assign_tutor')}}">Tutors</a>
-    <a href="{{url_for('schedule_page')}}">Schedule</a>
-    <a href="{{url_for('session_report')}}">Report</a>
-    {% if session.get("role") == "admin" %}
-        <a href="{{url_for('user_manage')}}">User Manage</a>
-    {% endif %}
-    {% if session.get("username") %}
+    {% if 'user' in session %}
+        {% if session.user.role == "admin" %}
+            <a href="{{url_for('student_page')}}">Students</a>
+            <a href="{{url_for('assign_tutor')}}">Tutors</a>
+            <a href="{{url_for('schedule_page')}}">Schedule</a>
+            <a href="{{url_for('session_report')}}">Report</a>
+            <a href="{{url_for('user_manage')}}">User Manage</a>
+        {% elif session.user.role == "tutor" %}
+            <a href="{{url_for('student_page')}}">Students</a>
+            <a href="{{url_for('assign_tutor')}}">Tutors</a>
+            <a href="{{url_for('schedule_page')}}">Schedule</a>
+            <a href="{{url_for('session_report')}}">Report</a>
+        {% elif session.user.role == "student" %}
+            <a href="{{url_for('student_my_timetable')}}">My Timetable</a>
+        {% endif %}
         <a href="{{url_for('logout')}}">Logout</a>
     {% endif %}
 </nav>
@@ -123,3 +183,4 @@
 </div>
 </body>
 </html>
+
