@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Welcome to Redgum Tutoring System</h2>
+    <p class="mb-4">Please use the navigation menu to access system functions.</p>
+    <div class="card shadow-sm p-4">
+        <h5>Navigation Guide</h5>
+        <ul>
+            {% if session.user.role == "admin" %}
+            <li>Students: View all student records and assign tutors</li>
+            <li>Tutors: View tutor information</li>
+            <li>Schedule: View all allocation timetable</li>
+            <li>Report: View session report</li>
+            <li>User Manage: Manage system user accounts</li>
+            {% elif session.user.role == "tutor" %}
+            <li>Tutors: View tutor information</li>
+            <li>Schedule: View all allocation timetable</li>
+            <li>Report: View session report</li>
+            {% elif session.user.role == "student" %}
+            <li>My Timetable: Check your personal tutoring schedule</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
